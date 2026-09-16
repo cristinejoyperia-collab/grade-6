@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Taiwan Teacher's Day Mooncake Studio</title>
+    <!-- Include html2canvas for snapshot saving -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        html, body {
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
+            background-color: #1a0f08;
+        }
+
+        /* Fully Animated Kitchen Background */
+        .kitchen-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(38, 20, 8, 0.9), rgba(64, 34, 14, 0.95)),
+                        radial-gradient(circle at 50% 30%, #4a2912 0%, #1a0c04 100%);
+            z-index: -2;
+        }
+        .kitchen-shelf {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 120px;
+            background: linear-gradient(to bottom, #2d1607, #1a0c04);
+            border-bottom: 4px solid #5c3214;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            padding-bottom: 10px;
+            z-index: -1;
+        }
+        .jar { font-size: 2rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); }
+        
+        .steam {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 50%;
+            animation: riseSteam 5s infinite ease-in-out;
+            pointer-events: none;
+            z-index: -1;
+        }
+        @keyframes riseSteam {
+            0% { transform: translateY(100vh) scale(0.6); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-10vh) scale(2.2); opacity: 0; }
+        }
+
+        /* Full Screen Game Container */
+        .app-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            text-align: center;
+            color: #ffdf6d;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
+        }
+
+        .game-card {
+            width: 100%;
+            max-width: 900px;
+            height: calc(100vh - 90px);
+            background: rgba(35, 19, 8, 0.88);
+            backdrop-filter: blur(14px);
+            border-radius: 22px;
+            border: 3px solid rgba(255, 223, 109, 0.35);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-section {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .step-section.active {
+            display: flex;
+        }
+
+        .workspace {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            width: 100%;
+            flex: 1;
+        }
+
+        .preview-box {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.7) 100%);
+            border-radius: 50%;
+            box-shadow: inset 0 8px 20px rgba(0,0,0,0.8), 0 8px 20px rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        canvas {
+            border-radius: 50%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+        }
+
+        .options-panel {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px;
+            border-radius: 16px;
+            width: 430px;
+            max-height: 360px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .options-panel h3 {
+            margin: 0;
+            color: #ffdf6d;
+            font-size: 1.05rem;
+            text-align: center;
+        }
+
+        .color-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .color-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            width: 100%;
+        }
+        .choice-card {
+            background: rgba(255,255,255,0.1);
+            padding: 6px 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .choice-card:hover, .choice-card.selected {
+            background: rgba(255, 223, 109, 0.25);
+            border-color: #ffdf6d;
+        }
+        .choice-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .choice-label {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .nav-footer {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 700px;
+            margin-top: 8px;
+        }
+        button.action-btn {
+            background: linear-gradient(to bottom, #ffaf3b, #f37322);
+            color: white;
+            border: none;
+            padding: 9px 22px;
+            font-size: 0.95rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        button.action-btn:active { transform: scale(0.95); }
+        button.secondary-btn { background: rgba(255,255,255,0.2); }
+
+        /* Quiz Modal */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            padding: 20px;
+        }
+        .quiz-card {
+            background: #fffdf5;
+            color: #333;
+            width: 100%;
+            max-width: 460px;
+            padding: 22px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            text-align: center;
+            border: 4px solid #f37322;
+        }
+        .quiz-card h2 { color: #f37322; margin-top: 0; font-size: 1.2rem; }
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .quiz-btn {
+            background: #fdfaf0;
+            border: 2px solid #f37322;
+            padding: 9px 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: #333;
+        }
+        .quiz-btn:hover { background: #ffe5cc; }
+
+        /* Oven Animation */
+        .oven-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            gap: 15px;
+        }
+        .oven-box {
+            width: 260px;
+            height: 200px;
+            background: #333;
+            border: 8px solid #1a1a1a;
+            border-radius: 18px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 10px 25px rgba(0,0,0,0.6);
+        }
+        .oven-window {
+            width: 170px;
+            height: 110px;
+            background: #111;
+            border-radius: 10px;
+            border: 4px solid #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: inset 0 0 18px #ff5500;
+        }
+        .heating-coils {
+            position: absolute;
+            top: 0; width: 100%; height: 8px;
+            background: #ff3300;
+            box-shadow: 0 0 12px #ff3300;
+        }
+        .timer-bar-container {
+            width: 260px;
+            height: 18px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #444;
+        }
+        .timer-progress {
+            width: 0%; height: 100%;
+            background: linear-gradient(90deg, #ffaf3b, #ff3300);
+            transition: width 0.1s linear;
+        }
+
+        /* Letter Studio */
+        .letter-studio {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+        .paper-letter {
+            width: 410px;
+            height: 310px;
+            background: #fffdf4;
+            color: #333;
+            padding: 18px;
+            border-radius: 4px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            position: relative;
+            font-family: 'Courier New', Courier, monospace;
+            border-top: 6px solid #d49b42;
+            background-image: linear-gradient(#eee 1px, transparent 1px);
+            background-size: 100% 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .paper-letter input, .paper-letter textarea {
+            border: none; background: transparent; font-family: inherit; width: 100%; resize: none;
+        }
+        .paper-letter input { font-weight: bold; font-size: 0.95rem; border-bottom: 1px dashed #ccc; }
+        .paper-letter textarea { height: 130px; font-size: 0.9rem; line-height: 24px; }
+        
+        .sticker-tray {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 210px;
+            align-items: center;
+        }
+        .sticker-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .sticker-item {
+            font-size: 1.8rem; cursor: pointer; background: rgba(255,255,255,0.15);
+            padding: 6px; border-radius: 10px; text-align: center;
+        }
+        .placed-sticker {
+            position: absolute; font-size: 2rem; cursor: move; user-select: none;
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.4));
+        }
+
+        /* Final Snapshot Area */
+        .output-container {
+            display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; height: 100%; overflow-y: auto; padding-bottom: 15px;
+        }
+        .snapshot-card {
+            background: #fffdf5; color: #333; width: 480px; padding: 18px; border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: flex; flex-direction: column; align-items: center; text-align: center; position: relative;
+        }
+
+        /* Audio Bar */
+        .audio-bar {
+            position: fixed; bottom: 10px; right: 15px; background: rgba(0,0,0,0.75);
+            padding: 6px 14px; border-radius: 20px; display: flex; align-items: center; gap: 10px; z-index: 100;
+            font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.25); color: #fff;
+        }
+        .audio-bar button {
+            background: #ffdf6d; border: none; padding: 4px 10px; border-radius: 8px; font-weight: bold; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated Kitchen Background & Shelf -->
+    <div class="kitchen-bg">
+        <div class="kitchen-shelf">
+            <div class="jar">🫙🥮</div>
+            <div class="jar">🍵🍯</div>
+            <div class="jar">🏮🌾</div>
+        </div>
+        <div class="steam" style="left: 15%; width: 60px; height: 60px; animation-delay: 0s;"></div>
+        <div class="steam" style="left: 50%; width: 85px; height: 85px; animation-delay: 2s;"></div>
+        <div class="steam" style="left: 80%; width: 50px; height: 50px; animation-delay: 4s;"></div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <h1>🥮 Taiwan Teacher's Day Mooncake Studio 🥮</h1>
+        </header>
+
+        <div class="game-card">
+
+            <!-- STEP 1: Crust Color -->
+            <div id="step-1" class="step-section active">
+                <h2 style="margin:5px 0 12px 0; color:#ffdf6d; font-size:1.15rem;">Step 1: Choose Photorealistic Mooncake Crust Tone</h2>
+                <div class="workspace">
+                    <div class="preview-box">
+                        <canvas id="canvas1" width="200" height="200"></canvas>
+                    </div>
+                    <div class="options-panel">
+                        <h3>Baked Crust Textures</h3>
+                        <div class="color-row">
+                            <div class="color-btn" style="background-color: #dcb35c;" onclick="setCrustColor('#dcb35c')"></div>
+                            <div class="color-btn" style="background-color: #c07a3c;" onclick="setCrustColor('#c07a3c')"></div>
+                            <div class="color-btn" style="background-color: #8c5322;" onclick="setCrustColor('#8c5322')"></div>
+                            <div class="color-btn" style="background-color: #8fa876;" onclick="setCrustColor('#8fa876')"></div>
+                            <div class="color-btn" style="background-color: #d88989;" onclick="setCrustColor('#d88989')"></div>
+                        </div>
+                        <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-top:8px;">
+                            <label style="font-size:0.85rem;">Custom Tone:</label>
+                            <input type="color" id="customColor" value="#dcb35c" oninput="setCrustColor(this.value)" style="border:none; width:45px; height:32px; border-radius:6px; cursor:pointer;">
+                        </div>
+                    </div>
+                </div>
+                <div class="nav-footer">
+                    <div></div>
+                    <button class="action-btn" onclick="triggerQuiz(1)">Next: Filling ➔</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Filling Selection -->
+            <div id="step-2" class="step-section">
+                <h2 style="margin:5px 0 12px 0; color:#ffdf6d; font-size:1.15rem;">Step 2: Choose Filling (Realistic Texture & Squish Sound)</h2>
+                <div class="workspace">
+                    <div class="preview-box">
+                        <canvas id="canvas2" width="200" height="200"></canvas>
+                    </div>
+                    <div class="options-panel">
+                        <h3>Authentic Fillings</h3>
+                        <div class="items-grid" id="fillingGrid"></div>
+                    </div>
+                </div>
+                <div class="nav-footer">
+                    <button class="action-btn secondary-btn" onclick="goToStep(1)">⬅ Back</button>
+                    <button class="action-btn" onclick="triggerQuiz(2)">Next: Pattern ➔</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Outer Design Pattern -->
+            <div id="step-3" class="step-section">
+                <h2 style="margin:5px 0 12px 0; color:#ffdf6d; font-size:1.15rem;">Step 3: Choose Engraving Mold (AI Style & Stamp Sound)</h2>
+                <div class="workspace">
+                    <div class="preview-box">
+                        <canvas id="canvas3" width="200" height="200"></canvas>
+                    </div>
+                    <div class="options-panel">
+                        <h3>Traditional Mold Patterns</h3>
+                        <div class="items-grid" id="patternGrid"></div>
+                    </div>
+                </div>
+                <div class="nav-footer">
+                    <button class="action-btn secondary-btn" onclick="goToStep(2)">⬅ Back</button>
+                    <button class="action-btn" onclick="triggerQuiz(3)">Next: Toppings ➔</button>
+                </div>
+            </div>
+
+            <!-- STEP 3.5: Toppings Selection -->
+            <div id="step-3-5" class="step-section">
+                <h2 style="margin:5px 0 12px 0; color:#ffdf6d; font-size:1.15rem;">Step 3.5: Sprinkle Realistic Toppings</h2>
+                <div class="workspace">
+                    <div class="preview-box">
+                        <canvas id="canvasToppings" width="200" height="200"></canvas>
+                    </div>
+                    <div class="options-panel">
+                        <h3>Garnish Options</h3>
+                        <div class="items-grid">
+                            <div class="choice-card" onclick="toggleTopping('sesame')">
+                                <div class="choice-icon" style="background:#fff3e0;">🌱</div>
+                                <div class="choice-label" id="topSesame">Sesame Seeds: OFF</div>
+                            </div>
+                            <div class="choice-card" onclick="toggleTopping('peanuts')">
+                                <div class="choice-icon" style="background:#d7ccc8;">🥜</div>
+                                <div class="choice-label" id="topPeanuts">Crushed Peanuts: OFF</div>
+                            </div>
+                            <div class="choice-card" onclick="toggleTopping('gold')">
+                                <div class="choice-icon" style="background:#fffde7;">✨</div>
+                                <div class="choice-label" id="topGold">Edible Gold Dust: OFF</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="nav-footer">
+                    <button class="action-btn secondary-btn" onclick="goToStep(3)">⬅ Back</button>
+                    <button class="action-btn" onclick="startOvenBaking()">Put in Oven! 🔥</button>
+                </div>
+            </div>
+
+            <!-- STEP 4: Oven Baking Animation -->
+            <div id="step-4-oven" class="step-section">
+                <div class="oven-screen">
+                    <h2 style="margin:0; color:#ffdf6d; font-size:1.3rem;">🔥 Baking in the Kitchen Oven... 🔥</h2>
+                    <div class="oven-box">
+                        <div class="heating-coils"></div>
+                        <div class="oven-window">
+                            <canvas id="canvasOven" width="130" height="130"></canvas>
+                        </div>
+                    </div>
+                    <div style="width:260px; text-align:center;">
+                        <p id="ovenStatusText" style="margin:5px 0; font-weight:bold; font-size:0.9rem;">Preheating & browning crust...</p>
+                        <div class="timer-bar-container">
+                            <div class="timer-progress" id="timerProgress"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 5: Paper Letter & Sticker Studio -->
+            <div id="step-5" class="step-section">
+                <h2 style="margin:0 0 8px 0; color:#ffdf6d; font-size:1.05rem;">Step 5: Write Note & Decorate Letter with Stickers</h2>
+                <div class="letter-studio">
+                    <div class="paper-letter" id="paperLetterBox">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <input type="text" id="teacherName" placeholder="To Teacher (e.g. Mrs. Lin)" style="width:70%;">
+                            <span style="font-size:0.75rem; color:#888;">Taiwan Teachers' Day 🍎</span>
+                        </div>
+                        <textarea id="studentMessage" placeholder="Happy Mid-Autumn Festival & Teachers' Day! Thank you for your endless guidance..."></textarea>
+                        <input type="text" id="studentName" placeholder="From Student Name" style="width:60%;">
+                    </div>
+                    <div class="sticker-tray">
+                        <h3>Stickers</h3>
+                        <div class="sticker-grid">
+                            <div class="sticker-item" onclick="addSticker('🏮')">🏮</div>
+                            <div class="sticker-item" onclick="addSticker('🐰')">🐰</div>
+                            <div class="sticker-item" onclick="addSticker('🍂')">🍂</div>
+                            <div class="sticker-item" onclick="addSticker('🍎')">🍎</div>
+                            <div class="sticker-item" onclick="addSticker('🌸')">🌸</div>
+                            <div class="sticker-item" onclick="addSticker('⭐')">⭐</div>
+                        </div>
+                        <p style="font-size:0.7rem; color:#ccc; margin:4px 0 0 0; text-align:center;">Tap to place on letter!</p>
+                    </div>
+                </div>
+                <div class="nav-footer" style="max-width: 640px;">
+                    <div></div>
+                    <button class="action-btn" onclick="finishStudio()">Finish & View Output! ✨</button>
+                </div>
+            </div>
+
+            <!-- STEP 6: Final Output & Snapshot -->
+            <div id="step-6" class="step-section">
+                <h2 style="margin:0 0 8px 0; color:#ffdf6d; font-size:1.1rem;">🎉 Your Photorealistic Mooncake Gift is Ready! 🎉</h2>
+                <div class="output-container">
+                    <div class="snapshot-card" id="snapshotCardArea">
+                        <h3 style="margin:4px 0; color:#d9534f;" id="outTeacherTitle">To Teacher</h3>
+                        <canvas id="canvasFinal" width="130" height="130" style="margin: 4px 0;"></canvas>
+                        <div style="background:#fdfaf0; border-left:4px solid #f37322; padding:8px; width:100%; text-align:left; border-radius:4px; font-size:0.85rem; line-height:1.3;" id="outLetterText">
+                            Message...
+                        </div>
+                        <p style="margin:6px 0 0 0; font-weight:bold; color:#555; font-size:0.85rem;" id="outStudentName">From Student</p>
+                    </div>
+                    <div style="display:flex; gap:12px; margin-bottom: 10px;">
+                        <button class="action-btn" onclick="takeSnapshotGallery()">📸 Save to Photo Gallery</button>
+                        <button class="action-btn secondary-btn" onclick="resetGame()">Design Another 🥮</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Cultural Quiz Modal -->
+    <div class="modal-overlay" id="quizModal">
+        <div class="quiz-card">
+            <h2 id="quizTitle">Taiwan Culture Quick Quiz! 🧠</h2>
+            <p id="quizQuestion" style="font-weight:bold; font-size:0.95rem; color:#444;"></p>
+            <div class="quiz-options" id="quizOptionsContainer"></div>
+        </div>
+    </div>
+
+    <!-- Audio Control Bar -->
+    <div class="audio-bar">
+        <span>🎶 Festival Music</span>
+        <button id="audioToggleBtn" onclick="toggleAudio()">Play Music</button>
+    </div>
+
+    <script>
+        let mooncakeData = {
+            color: "#dcb35c",
+            fillingId: 0,
+            patternId: 0,
+            toppings: { sesame: false, peanuts: false, gold: false },
+            teacher: "",
+            message: "",
+            student: ""
+        };
+
+        const fillings = [
+            { id: 0, name: "Lotus Seed Paste", color: "#e8c39e", emoji: "🌰", desc: "Golden smooth paste" },
+            { id: 1, name: "Red Bean Paste", color: "#591c10", emoji: "🫘", desc: "Rich sweet azuki bean" },
+            { id: 2, name: "Mixed Nuts", color: "#a66835", emoji: "🥜", desc: "Crunchy assorted nuts" },
+            { id: 3, name: "Salted Duck Egg", color: "#f39c12", emoji: "🥚", desc: "Savory golden egg yolk" },
+            { id: 4, name: "Taro Paste", color: "#9b7eb8", emoji: "🍠", desc: "Smooth purple taro" },
+            { id: 5, name: "Matcha Tea", color: "#619442", emoji: "🍵", desc: "Japanese green tea" },
+            { id: 6, name: "Fruit & Cheese", color: "#e69542", emoji: "🧀", desc: "Modern fusion filling" }
+        ];
+
+        const patterns = [
+            { id: 0, name: "Star Flower Petals" },
+            { id: 1, name: "Geometric Star" },
+            { id: 2, name: "Mandala Flower" },
+            { id: 3, name: "Blossom & Buds" },
+            { id: 4, name: "Classic Chinese Knot" },
+            { id: 5, name: "Simple Cross Geometric" }
+        ];
+
+        const triviaQuizzes = {
+            1: {
+                title: "Mid-Autumn Festival Trivia 🥮",
+                question: "In Taiwan, what popular outdoor activity is traditionally paired with eating mooncakes during Mid-Autumn Festival?",
+                options: [
+                    { text: "Barbecue (BBQ) parties in streets and parks", correct: true },
+                    { text: "Ice skating competitions", correct: false },
+                    { text: "Snowman building contests", correct: false }
+                ]
+            },
+            2: {
+                title: "Teachers' Day Trivia (Taiwan) 🍎",
+                question: "In Taiwan, Teachers' Day is celebrated on September 28th. Whose famous birthday does this date honor?",
+                options: [
+                    { text: "Sun Yat-sen", correct: false },
+                    { text: "Confucius (The ancient educator)", correct: true },
+                    { text: "Koxinga", correct: false }
+                ]
+            },
+            3: {
+                title: "Mooncake Tradition Trivia 🌙",
+                question: "Why do families gift round mooncakes during the Mid-Autumn Festival?",
+                options: [
+                    { text: "They symbolize family reunion and completeness", correct: true },
+                    { text: "They are used as baseballs", correct: false },
+                    { text: "They glow in the dark like stars", correct: false }
+                ]
+            }
+        };
+
+        let pendingNextStep = 2;
+
+        window.onload = function() {
+            buildFillingGrid();
+            buildPatternGrid();
+            updateAllCanvases();
+        };
+
+        function setCrustColor(hex) {
+            mooncakeData.color = hex;
+            document.getElementById('customColor').value = hex;
+            updateAllCanvases();
+        }
+
+        function selectFilling(id) {
+            mooncakeData.fillingId = id;
+            playSquishSound();
+            buildFillingGrid();
+            updateAllCanvases();
+        }
+
+        function selectPattern(id) {
+            mooncakeData.patternId = id;
+            playStampSound();
+            buildPatternGrid();
+            updateAllCanvases();
+        }
+
+        function toggleTopping(type) {
+            mooncakeData.toppings[type] = !mooncakeData.toppings[type];
+            document.getElementById('topSesame').innerText = `Sesame: ${mooncakeData.toppings.sesame ? 'ON' : 'OFF'}`;
+            document.getElementById('topPeanuts').innerText = `Peanuts: ${mooncakeData.toppings.peanuts ? 'ON' : 'OFF'}`;
+            document.getElementById('topGold').innerText = `Gold Dust: ${mooncakeData.toppings.gold ? 'ON' : 'OFF'}`;
+            playMagicDing();
+            updateAllCanvases();
+        }
+
+        function buildFillingGrid() {
+            const grid = document.getElementById('fillingGrid');
+            grid.innerHTML = '';
+            fillings.forEach(f => {
+                const card = document.createElement('div');
+                card.className = `choice-card ${mooncakeData.fillingId === f.id ? 'selected' : ''}`;
+                card.onclick = () => selectFilling(f.id);
+                card.innerHTML = `
+                    <div class="choice-icon" style="background-color: ${f.color};">${f.emoji}</div>
+                    <div>
+                        <div class="choice-label">${f.name}</div>
+                        <div style="font-size:0.65rem; color:#ddd;">${f.desc}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function buildPatternGrid() {
+            const grid = document.getElementById('patternGrid');
+            grid.innerHTML = '';
+            patterns.forEach(p => {
+                const card = document.createElement('div');
+                card.className = `choice-card ${mooncakeData.patternId === p.id ? 'selected' : ''}`;
+                card.onclick = () => selectPattern(p.id);
+                card.innerHTML = `
+                    <div class="choice-icon" style="background:#d49b42; padding:2px;">
+                        <canvas id="thumbCanvas_${p.id}" width="40" height="40" style="border-radius:50%;"></canvas>
+                    </div>
+                    <div class="choice-label">${p.name}</div>
+                `;
+                grid.appendChild(card);
+                setTimeout(() => {
+                    const thumbCtx = document.getElementById(`thumbCanvas_${p.id}`).getContext('2d');
+                    drawMooncakeGraphic(thumbCtx, 40, 40, "#dcb35c", 0, p.id, false, true);
+                }, 40);
+            });
+        }
+
+        function goToStep(stepNum) {
+            document.querySelectorAll('.step-section').forEach(sec => sec.classList.remove('active'));
+            if(stepNum === '3-5') {
+                document.getElementById('step-3-5').classList.add('active');
+            } else {
+                document.getElementById(`step-${stepNum}`).classList.add('active');
+            }
+            updateAllCanvases();
+        }
+
+        function triggerQuiz(afterStep) {
+            pendingNextStep = afterStep;
+            const quiz = triviaQuizzes[afterStep];
+            document.getElementById('quizTitle').innerText = quiz.title;
+            document.getElementById('quizQuestion').innerText = quiz.question;
+            
+            const optContainer = document.getElementById('quizOptionsContainer');
+            optContainer.innerHTML = '';
+            quiz.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-btn';
+                btn.innerText = opt.text;
+                btn.onclick = () => checkQuizAnswer(opt.correct);
+                optContainer.appendChild(btn);
+            });
+            document.getElementById('quizModal').style.display = 'flex';
+        }
+
+        function checkQuizAnswer(isCorrect) {
+            playMagicDing();
+            document.getElementById('quizModal').style.display = 'none';
+            if(pendingNextStep === 1) goToStep(2);
+            else if(pendingNextStep === 2) goToStep(3);
+            else if(pendingNextStep === 3) goToStep('3-5');
+        }
+
+        function startOvenBaking() {
+            goToStep('4-oven');
+            let progress = 0;
+            const progressBar = document.getElementById('timerProgress');
+            const statusText = document.getElementById('ovenStatusText');
+            const ovenCanvas = document.getElementById('canvasOven');
+            const ovenCtx = ovenCanvas.getContext('2d');
+
+            let bakeInterval = setInterval(() => {
+                progress += 2;
+                progressBar.style.width = progress + '%';
+
+                let bfactor = progress / 100;
+                let bakedColor = interpolateColor("#ffdf6d", mooncakeData.color, bfactor);
+                drawMooncakeGraphic(ovenCtx, 130, 130, bakedColor, mooncakeData.fillingId, mooncakeData.patternId, mooncakeData.toppings);
+
+                if (progress < 40) statusText.innerText = "Baking aroma filling the kitchen...";
+                else if (progress < 80) statusText.innerText = "Crust turning golden brown & crisp...";
+                else statusText.innerText = "Ding! Mooncake baked to perfection! ✨";
+
+                if (progress >= 100) {
+                    clearInterval(bakeInterval);
+                    playMagicDing();
+                    setTimeout(() => { goToStep(5); }, 900);
+                }
+            }, 60);
+        }
+
+        function updateAllCanvases() {
+            ['canvas1', 'canvas2', 'canvas3', 'canvasToppings'].forEach(id => {
+                const c = document.getElementById(id);
+                if(c) {
+                    drawMooncakeGraphic(c.getContext('2d'), c.width, c.height, mooncakeData.color, mooncakeData.fillingId, mooncakeData.patternId, mooncakeData.toppings);
+                }
+            });
+        }
+
+        // --- Photorealistic Canvas Rendering Engine ---
+        function drawMooncakeGraphic(ctx, width, height, crustColor, fillingId, patternId, toppings, isThumb = false) {
+            ctx.clearRect(0, 0, width, height);
+            const cx = width / 2;
+            const cy = height / 2;
+            const radius = (width / 2) - (isThumb ? 2 : 10);
+
+            ctx.save();
+            ctx.translate(cx, cy);
+
+            // 1. Realistic 3D Baked Scalloped Edge
+            const petals = isThumb ? 10 : 18;
+            ctx.fillStyle = shadeColor(crustColor, -30);
+            ctx.beginPath();
+            for (let i = 0; i < petals; i++) {
+                let angle = (i * 2 * Math.PI) / petals;
+                let x = Math.cos(angle) * radius;
+                let y = Math.sin(angle) * radius;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.arc(x, y, radius * 0.15, angle - Math.PI/2, angle + Math.PI/2);
+            }
+            ctx.fill();
+
+            // 2. Main Crust with Photorealistic Radial Sheen
+            let crustGrad = ctx.createRadialGradient(-radius*0.2, -radius*0.2, radius*0.1, 0, 0, radius);
+            crustGrad.addColorStop(0, shadeColor(crustColor, 25));
+            crustGrad.addColorStop(0.5, crustColor);
+            crustGrad.addColorStop(1, shadeColor(crustColor, -35));
+
+            ctx.fillStyle = crustGrad;
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.91, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // 3. Inner Filling Ring (Realistic cut or center preview)
+            let fillData = fillings[fillingId];
+            let fillGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, radius * 0.65);
+            fillGrad.addColorStop(0, shadeColor(fillData.color, 20));
+            fillGrad.addColorStop(1, fillData.color);
+
+            ctx.fillStyle = fillGrad;
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.72, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // If Salted Egg Yolk filling, draw realistic embedded central yellow egg yolk
+            if (fillingId === 3) {
+                ctx.fillStyle = '#ff9900';
+                ctx.beginPath();
+                ctx.arc(0, 0, radius * 0.28, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.fillStyle = '#ffcc00';
+                ctx.beginPath();
+                ctx.arc(-radius*0.06, -radius*0.06, radius * 0.1, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            // Crust Surface Pressed Ring
+            ctx.strokeStyle = shadeColor(crustColor, -45);
+            ctx.lineWidth = isThumb ? 0.8 : 2;
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.82, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            // 4. Photorealistic Embossed Pattern Mold
+            ctx.strokeStyle = shadeColor(crustColor, -55);
+            ctx.fillStyle = shadeColor(crustColor, -45);
+            ctx.lineWidth = isThumb ? 0.8 : 1.8;
+            drawPatternDetails(ctx, patternId, radius * 0.55);
+
+            // 5. Realistic Toppings
+            if (toppings && toppings.sesame) {
+                ctx.fillStyle = '#ffffff';
+                for(let i=0; i<6; i++) {
+                    let angle = i * Math.PI / 3 + 0.2;
+                    let tx = Math.cos(angle) * radius * 0.38;
+                    let ty = Math.sin(angle) * radius * 0.38;
+                    ctx.beginPath(); ctx.ellipse(tx, ty, 2.5, 1.8, angle, 0, 2*Math.PI); ctx.fill();
+                }
+            }
+            if (toppings && toppings.peanuts) {
+                ctx.fillStyle = '#7a4215';
+                for(let i=0; i<5; i++) {
+                    let angle = i * Math.PI / 2.5;
+                    let tx = Math.cos(angle) * radius * 0.32;
+                    let ty = Math.sin(angle) * radius * 0.32;
+                    ctx.beginPath(); ctx.arc(tx, ty, 3, 0, 2*Math.PI); ctx.fill();
+                }
+            }
+            if (toppings && toppings.gold) {
+                ctx.fillStyle = '#ffe83b';
+                for(let i=0; i<4; i++) {
+                    let angle = i * Math.PI / 2 + 0.5;
+                    let tx = Math.cos(angle) * radius * 0.22;
+                    let ty = Math.sin(angle) * radius * 0.22;
+                    ctx.fillRect(tx, ty, 3.5, 3.5);
+                }
+            }
+
+            ctx.restore();
+        }
+
+        function drawPatternDetails(ctx, patternId, r) {
+            switch(patternId) {
+                case 0:
+                    for (let i = 0; i < 6; i++) {
+                        ctx.save(); ctx.rotate((i * Math.PI) / 3);
+                        ctx.beginPath(); ctx.ellipse(0, -r * 0.4, r * 0.18, r * 0.35, 0, 0, 2 * Math.PI); ctx.stroke();
+                        ctx.restore();
+                    }
+                    ctx.beginPath(); ctx.arc(0, 0, r * 0.15, 0, 2*Math.PI); ctx.stroke();
+                    break;
+                case 1:
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        let angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+                        let x = Math.cos(angle) * r * 0.68; let y = Math.sin(angle) * r * 0.68;
+                        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath(); ctx.stroke();
+                    break;
+                case 2:
+                    for (let i = 0; i < 5; i++) {
+                        ctx.save(); ctx.rotate((i * 2 * Math.PI) / 5);
+                        ctx.beginPath(); ctx.arc(0, -r * 0.35, r * 0.25, 0, Math.PI); ctx.stroke();
+                        ctx.restore();
+                    }
+                    ctx.beginPath(); ctx.arc(0, 0, r * 0.25, 0, 2*Math.PI); ctx.stroke();
+                    break;
+                case 3:
+                    for (let i = 0; i < 5; i++) {
+                        ctx.save(); ctx.rotate((i * 2 * Math.PI) / 5);
+                        ctx.beginPath(); ctx.ellipse(0, -r * 0.38, r * 0.2, r * 0.32, 0, 0, 2*Math.PI); ctx.stroke();
+                        ctx.restore();
+                    }
+                    ctx.beginPath(); ctx.arc(0, 0, r * 0.12, 0, 2*Math.PI); ctx.fill();
+                    break;
+                case 4:
+                    ctx.beginPath(); ctx.arc(0, 0, r * 0.58, 0, 2*Math.PI); ctx.stroke();
+                    ctx.strokeRect(-r * 0.28, -r * 0.28, r * 0.56, r * 0.56);
+                    break;
+                case 5:
+                    ctx.beginPath(); ctx.arc(0, 0, r * 0.6, 0, 2*Math.PI); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-r * 0.32, 0); ctx.lineTo(r * 0.32, 0);
+                    ctx.moveTo(0, -r * 0.32); ctx.lineTo(0, r * 0.32); ctx.stroke();
+                    break;
+            }
+        }
+
+        // Sticker touch/drag support
+        function addSticker(emoji) {
+            playMagicDing();
+            const letterBox = document.getElementById('paperLetterBox');
+            const sticker = document.createElement('div');
+            sticker.className = 'placed-sticker';
+            sticker.innerText = emoji;
+            sticker.style.left = (25 + Math.random() * 260) + 'px';
+            sticker.style.top = (35 + Math.random() * 160) + 'px';
+            
+            let isDragging = false;
+            sticker.onpointerdown = (e) => { isDragging = true; sticker.setPointerCapture(e.pointerId); };
+            sticker.onpointermove = (e) => {
+                if (!isDragging) return;
+                const rect = letterBox.getBoundingClientRect();
+                sticker.style.left = (e.clientX - rect.left - 20) + 'px';
+                sticker.style.top = (e.clientY - rect.top - 20) + 'px';
+            };
+            sticker.onpointerup = () => { isDragging = false; };
+            letterBox.appendChild(sticker);
+        }
+
+        function finishStudio() {
+            mooncakeData.teacher = document.getElementById('teacherName').value || "My Dear Teacher";
+            mooncakeData.message = document.getElementById('studentMessage').value || "Happy Mid-Autumn Festival & Teachers' Day!";
+            mooncakeData.student = document.getElementById('studentName').value || "A Grateful Student";
+
+            document.getElementById('outTeacherTitle').innerText = `To: ${mooncakeData.teacher}`;
+            document.getElementById('outLetterText').innerText = `"${mooncakeData.message}"`;
+            document.getElementById('outStudentName').innerText = `From: ${mooncakeData.student}`;
+
+            goToStep(6);
+            const finalCtx = document.getElementById('canvasFinal').getContext('2d');
+            drawMooncakeGraphic(finalCtx, 130, 130, mooncakeData.color, mooncakeData.fillingId, mooncakeData.patternId, mooncakeData.toppings);
+        }
+
+        function takeSnapshotGallery() {
+            playMagicDing();
+            const card = document.getElementById('snapshotCardArea');
+            html2canvas(card, { backgroundColor: '#fffdf5', scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'my-teachers-day-mooncake.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        function resetGame() { goToStep(1); }
+
+        // --- Web Audio API SFX & Music ---
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function playSquishSound() {
+            const ctx = getAudioContext();
+            let osc = ctx.createOscillator(), gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(170, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(70, ctx.currentTime + 0.14);
+            gain.gain.setValueAtTime(0.18, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.14);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.14);
+        }
+
+        function playStampSound() {
+            const ctx = getAudioContext();
+            let osc = ctx.createOscillator(), gain = ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(280, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(90, ctx.currentTime + 0.09);
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.09);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.09);
+        }
+
+        function playMagicDing() {
+            const ctx = getAudioContext();
+            let now = ctx.currentTime;
+            [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                let osc = ctx.createOscillator(), gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+                gain.gain.setValueAtTime(0.1, now + idx * 0.07);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.35);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(now + idx * 0.07); osc.stop(now + idx * 0.07 + 0.35);
+            });
+        }
+
+        let isPlaying = false, songInterval = null;
+        const notes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+        const melody = [0, 2, 4, 3, 2, 0, 1, 3, 4, 5, 4, 2];
+        let noteIdx = 0;
+
+        function toggleAudio() {
+            const btn = document.getElementById('audioToggleBtn');
+            const ctx = getAudioContext();
+            if (!isPlaying) {
+                if (songInterval) clearInterval(songInterval);
+                songInterval = setInterval(() => {
+                    let osc = ctx.createOscillator(), gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(notes[melody[noteIdx]], ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.45);
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.start(); osc.stop(ctx.currentTime + 0.45);
+                    noteIdx = (noteIdx + 1) % melody.length;
+                }, 580);
+                isPlaying = true; btn.innerText = "Pause Music";
+            } else {
+                clearInterval(songInterval); songInterval = null;
+                isPlaying = false; btn.innerText = "Play Music";
+            }
+        }
+
+        function shadeColor(color, percent) {
+            let num = parseInt(color.replace("#",""), 16),
+                amt = Math.round(2.55 * percent),
+                R = (num >> 16) + amt, G = (num >> 8 & 0x00FF) + amt, B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R<255?R<0?0:R:255)*0x10000 + (G<255?G<0?0:G:255)*0x100 + (B<255?B<0?0:B:255)).toString(16).slice(1);
+        }
+
+        function interpolateColor(color1, color2, factor) {
+            let c1 = parseInt(color1.replace('#',''), 16), c2 = parseInt(color2.replace('#',''), 16);
+            let r = Math.round((c1 >> 16) + factor * ((c2 >> 16) - (c1 >> 16)));
+            let g = Math.round(((c1 >> 8) & 0xff) + factor * (((c2 >> 8) & 0xff) - ((c1 >> 8) & 0xff)));
+            let b = Math.round((c1 & 0xff) + factor * ((c2 & 0xff) - (c1 & 0xff)));
+            return `rgb(${r},${g},${b})`;
+        }
+    </script>
+</body>
+</html>
